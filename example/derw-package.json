@@ -1,0 +1,8 @@
+{
+    "name": "example",
+    "exposing": [],
+    "dependencies": {
+        "derw-lang/stdlib": "main",
+        "derw-lang/html": "main"
+    }
+}

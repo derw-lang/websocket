@@ -1,0 +1,31 @@
+import "../derw-packages/derw-lang/stdlib/src/New" exposing ( makeNewByName )
+
+exposing (Socket, Connection, connect)
+
+type alias Socket msg = {
+    url: string,
+    onOpen: void -> msg,
+    onMessage: string -> msg
+}
+
+type alias Connection = {
+    socket: WebSocket
+}
+
+connect: Socket msg -> Connection
+connect socket =
+    let
+        connection: WebSocket
+        connection =
+            makeNewByName "WebSocket" [ socket.url ]
+
+        openListener: void
+        openListener =
+            connection.addEventListener "open" (\_ -> socket.onOpen())
+
+
+        messageListener: void
+        messageListener =
+            connection.addEventListener "message" (\message -> socket.onMessage message.data))
+    in
+        { socket: connection }

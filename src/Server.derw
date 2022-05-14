@@ -1,0 +1,34 @@
+import "./Server_kernel" as Kernel
+import ws
+import http
+
+exposing (Connection, WebsocketSettings, Websocket)
+exposing (Response, Send, Wait)
+exposing (connect, send)
+
+type alias Connection = {
+    socket: ws.WebSocket,
+    request: http.IncomingMessage,
+}
+
+type alias WebsocketSettings = {
+    port: number,
+    onConnection: Connection -> Response,
+    onMessage: Connection -> string -> Response
+}
+
+type Response = Send { message: string } | Wait
+
+type alias Websocket = {
+    socket: ws.WebSocketServer
+}
+
+connect: WebsocketSettings -> Websocket
+connect settings =
+    {
+        socket: Kernel.connect settings
+    }
+
+send: Connection -> string -> void
+send connection message =
+    connection.socket.send message

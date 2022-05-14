@@ -1,0 +1,23 @@
+{
+  "name": "websocket",
+  "version": "1.0.0",
+  "description": "Websocket server and client in Derw",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derw-lang/websocket.git"
+  },
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/derw-lang/websocket/issues"
+  },
+  "homepage": "https://github.com/derw-lang/websocket#readme",
+  "dependencies": {
+    "@types/ws": "^8.5.3",
+    "ws": "^8.6.0"
+  }
+}

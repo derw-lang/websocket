@@ -1,0 +1,96 @@
+import "../derw-packages/derw-lang/html/src/Html" as Html exposing ( program, RunningProgram, Program, text, div, HtmlNode )
+import "../derw-packages/derw-lang/stdlib/src/List" as List
+import "../../src/Client" exposing (Connection, connect)
+
+type alias Model = {
+    messages: List string,
+    currentMessage: string
+}
+
+initialModel: Model
+initialModel =
+    {
+        messages: [ ],
+        currentMessage: ""
+    }
+
+type Msg =
+    Noop
+    | NewMessage { message: string }
+    | SetCurrentMessage { message: string }
+    | SendMessage
+
+update: Msg -> Model -> Model
+update msg model =
+    case msg of
+        NewMessage { message } ->
+            { ...model, messages: message :: model.messages }
+
+        SetCurrentMessage { message } ->
+            { ...model, currentMessage: message }
+
+        SendMessage ->
+            let
+                send: void
+                send =
+                    connection.socket.send model.currentMessage
+            in
+                { ...model, messages: model.currentMessage :: model.messages, currentMessage: "" }
+
+        Noop ->
+            model
+
+inputter: Model -> HtmlNode Msg
+inputter model =
+    Html.input [  Html.onInput (\message -> SetCurrentMessage { message: message } ) ] [ Html.attribute "value" model.currentMessage ]
+
+viewSendMessage: Model -> HtmlNode Msg
+viewSendMessage model =
+    div [ ] [ ] [
+        inputter model,
+        Html.button [ Html.onClick (\_ -> SendMessage) ] [ ] [ Html.text "send" ]
+    ]
+
+view: Model -> HtmlNode Msg
+view model =
+    List.map (\x -> div [ ] [ ] [ text x ]) model.messages
+        |> (\x -> div [ ] [ ] (viewSendMessage model :: x))
+
+root: any
+root =
+    document.getElementById "root"
+
+main: RunningProgram Model Msg
+main =
+    program {
+        initialModel: initialModel,
+        view: view,
+        update: update,
+        root: root
+    }
+
+opened: any -> Msg
+opened _ =
+    let
+        blank: void
+        blank =
+            globalThis.console.log "Opened"
+    in
+        Noop
+
+receiveMessage: string -> Msg
+receiveMessage message =
+    let
+        blank: void
+        blank =
+            globalThis.console.log `message: ${message}`
+    in
+        NewMessage { message: message }
+
+connection: Connection
+connection =
+    connect {
+        url: "ws://localhost:8888",
+        onOpen: (\_ -> opened null |> main.send),
+        onMessage: (\message -> receiveMessage message |> main.send)
+    }

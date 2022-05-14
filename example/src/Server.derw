@@ -1,0 +1,12 @@
+import "../../src/Server" exposing (Connection, Response, Websocket, Send, Wait, connect)
+
+onMessage: Connection -> string -> Response
+onMessage conn message =
+    if message == "hi" then
+        Send { message: "Hello from the server" }
+    else
+        Wait
+
+main: Websocket
+main =
+    connect { port: 8888, onConnection: (\connection -> Send { message: "Welcome!" }), onMessage: onMessage }
