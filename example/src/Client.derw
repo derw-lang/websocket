@@ -1,11 +1,19 @@
-import "../derw-packages/derw-lang/html/src/Html" as Html exposing ( program, RunningProgram, Program, text, div, HtmlNode )
+import "../derw-packages/derw-lang/html/src/Html" as Html exposing ( program, RunningProgram, Program, text, div, HtmlNode, style_)
 import "../derw-packages/derw-lang/stdlib/src/List" as List
 import "../../src/Client" exposing (Connection, connect)
 
+type Source = Local | Server
+
+type alias Message = {
+    message: string,
+    source: Source
+}
+
 type alias Model = {
-    messages: List string,
+    messages: List Message,
     currentMessage: string
 }
+
 
 initialModel: Model
 initialModel =
@@ -24,7 +32,12 @@ update: Msg -> Model -> Model
 update msg model =
     case msg of
         NewMessage { message } ->
-            { ...model, messages: message :: model.messages }
+            let
+                incoming: Message
+                incoming =
+                    { message: message, source: Server }
+            in
+                { ...model, messages: incoming :: model.messages }
 
         SetCurrentMessage { message } ->
             { ...model, currentMessage: message }
@@ -34,8 +47,12 @@ update msg model =
                 send: void
                 send =
                     connection.socket.send model.currentMessage
+
+                myMessage: Message
+                myMessage =
+                    { message: model.currentMessage, source: Local }
             in
-                { ...model, messages: model.currentMessage :: model.messages, currentMessage: "" }
+                { ...model, messages: myMessage :: model.messages, currentMessage: "" }
 
         Noop ->
             model
@@ -51,9 +68,15 @@ viewSendMessage model =
         Html.button [ Html.onClick (\_ -> SendMessage) ] [ ] [ Html.text "send" ]
     ]
 
+color: Message -> string
+color message =
+    case message.source of
+        Local -> "green"
+        Server -> "red"
+
 view: Model -> HtmlNode Msg
 view model =
-    List.map (\x -> div [ ] [ ] [ text x ]) model.messages
+    List.map (\x -> div [ ] [ style_ "color" (color x) ] [ text x.message ]) model.messages
         |> (\x -> div [ ] [ ] (viewSendMessage model :: x))
 
 root: any
